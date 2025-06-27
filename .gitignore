@@ -10,6 +10,7 @@ auto-save-list/
 eln-cache/
 
 # Straight.el build and cache directories
+straight/
 straight/build/
 straight/repos/
 straight/versions/
