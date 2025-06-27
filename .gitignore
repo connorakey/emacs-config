@@ -1,5 +1,6 @@
 # Ignore Everything
 *
+config.el
 
 !init.el
 !config.org
