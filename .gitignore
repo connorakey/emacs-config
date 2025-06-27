@@ -1,0 +1,22 @@
+# Emacs backup and autosave files
+*~
+\#*\#
+.\#*
+
+# Emacs auto-save-list directory
+auto-save-list/
+
+# Native compilation cache
+eln-cache/
+
+# Straight.el build and cache directories
+straight/build/
+straight/repos/
+straight/versions/
+straight/lock/
+straight/registries/
+
+# Other temporary or cache files
+*.elc
+*.cache
+*.log
