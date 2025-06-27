@@ -50,13 +50,20 @@
 			  :global-prefix "M-SPC") ;; access leader in insert mode
 
   (connor/leader-keys
-   "b" '(:ignore t :wk "buffer") ;; doesn't do anything, just for which key.
+   "b" '(:wk "Buffer") ;; doesn't do anything, just for which key.
    "bb" '(switch-to-buffer :wk "Switch buffer")
    "bk" '(kill-this-buffer :wk "Kill this buffer")
    "bn" '(next-buffer :wk "Next buffer")
    "bp" '(previous-buffer :wk "Previous buffer")
    "br" '(revert-buffer :wk "Reload buffer"))
-   
+
+  (connor/leader-keys
+    "e" '(:ignore t :wk "Evaluate")
+    "eb" '(eval-buffer :wk "Evaluate elisp in buffer")
+    "ed" '(eval-defun :wk "Evaluate defun containing or after point")
+    "ee" '(eval-expression :wk "Evaluate an elisp expression")
+    "el" '(eval-last-sexp :wk "Evaluate elisp expression before point")
+    "er" '(eval-region :wk "Evaluate elisp in region"))
 
   
 
