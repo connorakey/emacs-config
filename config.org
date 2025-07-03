@@ -1,3 +1,4 @@
+
 #+TITLE: Connor's Emacs Configuration
 #+Author: Connor Akey
 #+DESCRIPTION: My personal Emacs configuration
@@ -5,72 +6,109 @@
 #+OPTIONS: toc:2
 
 * TABLE OF CONTENTS :toc:
-- [[#inital-startup][INITAL STARTUP]]
+- [[#setting-up-emacs][SETTING UP EMACS]]
   - [[#straightel-package-manager][Straight.el (Package Manager)]]
   - [[#evil-mode][Evil Mode]]
   - [[#general-keybindings][General Keybindings]]
+- [[#all-the-icons][ALL THE ICONS]]
+- [[#buffer-move][BUFFER MOVE]]
+- [[#backup][BACKUP]]
+- [[#company][COMPANY]]
+- [[#dashboard][DASHBOARD]]
+- [[#diminish][DIMINISH]]
+- [[#dired][DIRED]]
+- [[#flycheck][FLYCHECK]]
 - [[#graphical-user-interface-tweaks][GRAPHICAL USER INTERFACE TWEAKS]]
   - [[#fonts][Fonts]]
-  - [[#setting-the-font-face][Setting the Font Face]]
   - [[#disable-menubar-toolbars-and-scrollbars][Disable Menubar, Toolbars, and Scrollbars]]
   - [[#display-line-numbers-and-truncated-lines][Display Line Numbers and Truncated Lines]]
+- [[#git-programs][GIT PROGRAMS]]
+  - [[#git-time-machine][Git Time Machine]]
+  - [[#magit][Magit]]
+- [[#highlight-todo][HIGHLIGHT TODO]]
+- [[#ivy-counsel][IVY (COUNSEL)]]
+  - [[#counsel-project-tile][Counsel Project Tile]]
+- [[#language-support][LANGUAGE SUPPORT]]
+- [[#minibuffer-escape][MINIBUFFER ESCAPE]]
+- [[#modeline][MODELINE]]
 - [[#org-mode][ORG MODE]]
   - [[#enabling-table-of-contents][Enabling Table of Contents]]
   - [[#enabling-org-bullets][Enabling Org Bullets]]
+  - [[#source-code-block-tag-expansion][Source Code Block Tag Expansion]]
+  - [[#inline-images][Inline Images]]
+- [[#perspective][PERSPECTIVE]]
+- [[#project-tile][PROJECT-TILE]]
+- [[#rainbow-delimiters][RAINBOW DELIMITERS]]
+- [[#rainbow-mode][RAINBOW MODE]]
 - [[#reload-emacs][RELOAD EMACS]]
+- [[#shells-and-terminals][SHELLS AND TERMINALS]]
+  -  [[#vterm][Vterm]]
+  - [[#vterm-toggle][Vterm-Toggle]]
+- [[#sudo-edit][SUDO EDIT]]
+- [[#doom-emacs-theme-engine][DOOM EMACS Theme Engine]]
 - [[#which-key][WHICH-KEY]]
 
-* INITAL STARTUP
-Important programs to load first
+* SETTING UP EMACS
+ Full guide to setting up my Emacs configuration properly, will write soon when configuration is fully finished
+
+ Notes: M-X all-the-icons-font-instaltant programs to load first, install required fonts
 
 ** Straight.el (Package Manager)
 #+begin_src emacs-lisp
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name
+          "straight/repos/straight.el/bootstrap.el"
+          (or (bound-and-true-p straight-base-dir)
+              user-emacs-directory)))
+        (bootstrap-version 7))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 
-;; Bootstrap use-package via straight.el
-(straight-use-package 'use-package)
+  ;; Bootstrap use-package via straight.el
+  (straight-use-package 'use-package)
 
-;; Use straight.el by default in use-package
-(setq straight-use-package-by-default t)
+  ;; Use straight.el by default in use-package
+  (setq straight-use-package-by-default t)
 
-(require 'use-package)
+  (require 'use-package)
 #+end_src
 
 ** Evil Mode
 Vim Keybindings for Emacs
 
 #+begin_src emacs-lisp
-(use-package evil
-  :init
-  (setq evil-want-integration t) 
-  (setq evil-want-keybinding nil)
-  (setq evil-vsplit-window-right t)  ;; splits on the right
-  (setq evil-split-window-below t)   ;; splits on the bottom
-  :config
-  (evil-mode 1))
+  (use-package evil
+    :init
+    (setq evil-want-integration t) 
+    (setq evil-want-keybinding nil)
+    (setq evil-vsplit-window-right t)  ;; splits on the right
+    (setq evil-split-window-below t)   ;; splits on the bottom
+    :config
+    (evil-mode 1))
 
-(use-package evil-collection
-  :after evil
-  :config
-  (setq evil-collection-mode-list '(dashboard dired ibuffer))
-  (evil-collection-init))
+  (use-package evil-collection
+    :after evil
+    :config
+    (setq evil-collection-mode-list '(dashboard dired ibuffer))
+    (evil-collection-init))
+
+  ;; Unmaps SPC, RET, and TAB in Evil Mode, as some programs do not work as expected in Evil Mode if these keys are mapped.
+  (with-eval-after-load 'evil-maps
+    (define-key evil-motion-state-map (kbd "SPC") nil)
+    (define-key evil-motion-state-map (kbd "RET") nil)
+    (define-key evil-motion-state-map (kbd "TAB") nil))
 #+end_src
 
 ** General Keybindings
+General is a keybinding engine for Emacs, it allows for you to map emacs commands to specific, custom keybindings within Emacs, this is used across almost all configurations and if done properly can eliminate the need for M-X execution of commands.
+
 #+begin_src emacs-lisp
   (use-package general
     :config
@@ -78,26 +116,36 @@ Vim Keybindings for Emacs
 
     ;; Set space as the global leader key
     (general-create-definer connor/leader-keys
-  			  
-  			  :states '(normal insert visual emacs)
-  			  :keymaps 'override
-  			  :prefix "SPC" ;; sets leader
-  			  :global-prefix "M-SPC") ;; access leader in insert mode
+      :states '(normal insert visual emacs)
+      :keymaps 'override
+      :prefix "SPC" ;; sets leader
+      :global-prefix "M-SPC") ;; access leader in insert mode
+    
     ;; Misc Leader Keys
      (connor/leader-keys
+      "SPC" '(counsel-M-x :wk "Counsel M-x")
       "." '(find-file :wk "Find file")
+      "=" '(perspective-map :wk "Perspective")
+      
       "f c" '((lambda () (interactive) (find-file "~/.emacs.d/config.org")) :wk "Edit Emacs configuration")
+      "f r" '(counsel-recentf :wk "Find recent files")
       "TAB TAB" '(comment-line :wk "Comment lines"))
 
     ;; Buffer Leader Keys 
     (connor/leader-keys
-     "b" '(:wk "Buffer") ;; doesn't do anything, just for which key.
+     "b" '(:ignore t :wk "Buffer") 
      "b b" '(switch-to-buffer :wk "Switch buffer")
      "b i" '(ibuffer :wk "Ibuffer") 
      "b k" '(kill-this-buffer :wk "Kill this buffer")
      "b n" '(next-buffer :wk "Next buffer")
      "b p" '(previous-buffer :wk "Previous buffer")
      "b r" '(revert-buffer :wk "Reload buffer"))
+
+    (connor/leader-keys
+      "d" '(:ignore t :wk "Dired")
+      "d d" '(dired :wk "Open dired")
+      "d j" '(dired-jump :wk "Dired jump to current")
+      "d p" '(peep-dired :wk "Peep-dired"))
     
     ;Eval Leader Keys
     (connor/leader-keys
@@ -109,52 +157,395 @@ Vim Keybindings for Emacs
       "e r" '(eval-region :wk "Evaluate elisp in region"))
 
     (connor/leader-keys
-      "h" '(:ignore :wk "Help")
+      "g" '(:ignore t :wk "Git")    
+      "g /" '(magit-displatch :wk "Magit dispatch")
+      "g ." '(magit-file-displatch :wk "Magit file dispatch")
+      "g b" '(magit-branch-checkout :wk "Switch branch")
+      "g c" '(:ignore t :wk "Create") 
+      "g c b" '(magit-branch-and-checkout :wk "Create branch and checkout")
+      "g c c" '(magit-commit-create :wk "Create commit")
+      "g c f" '(magit-commit-fixup :wk "Create fixup commit")
+      "g C" '(magit-clone :wk "Clone repo")
+      "g f" '(:ignore t :wk "Find") 
+      "g f c" '(magit-show-commit :wk "Show commit")
+      "g f f" '(magit-find-file :wk "Magit find file")
+      "g f g" '(magit-find-git-config-file :wk "Find gitconfig file")
+      "g F" '(magit-fetch :wk "Git fetch")
+      "g g" '(magit-status :wk "Magit status")
+      "g i" '(magit-init :wk "Initialize git repo")
+      "g l" '(magit-log-buffer-file :wk "Magit buffer log")
+      "g r" '(vc-revert :wk "Git revert file")
+      "g s" '(magit-stage-file :wk "Git stage file")
+      "g t" '(git-timemachine :wk "Git time machine")
+      "g u" '(magit-stage-file :wk "Git unstage file"))
+
+    (connor/leader-keys
+      "h" '(:ignore t :wk "Help")
       "h f" '(describe-function :wk "Describe function")
+      "h t" '(load-theme :wk "Load theme")
       "h v" '(describe-variable :wk "Describe variable")
       "h r r" '(reload-init-file :wk "Reload Emacs configuration"))
 
+    ; Org Keybindings
+    (connor/leader-keys
+     "m" '(:ignore t :wk "Org")
+     "m a" '(org-agenda :wk "Org agenda")
+     "m e" '(org-export-dispatch :wk "Org export dispatch")
+     "m i" '(org-toggle-item :wk "Org toggle item")
+     "m t" '(org-todo :wk "Org todo")
+     "m B" '(org-babel-tangle :wk "Org babel tangle")
+     "m T" '(org-todo-list :wk "Org todo list"))
+
+    (connor/leader-keys
+      "m b" '(:ignore t :wk "Tables")
+      "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+
+    (connor/leader-keys
+      "m d" '(:ignore t :wk "Date/deadline")
+      "m d t" '(org-time-stamp :wk "Org time stamp"))
+    
+    ; Project Keybindings
+    (connor/leader-keys
+      "p" '(projectile-command-map :wk "Projectile"))
+    
+    ; Toggle Keybinds
     (connor/leader-keys
       "t" '(:ignore t :wk "Toggle")
       "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-      "t t" '(visual-line-mode :wk "Toggle truncated lines"))
+      "t t" '(visual-line-mode :wk "Toggle truncated lines")
+      "t v" '(vterm-toggle :wk "Toggle vterm"))
+
+
+    ; Window Movement Block
+    (connor/leader-keys
+      "w" '(:ignore t :wk "Windows")
+      ;; Window splits
+      "w c" '(evil-window-delete :wk "Close window")
+      "w n" '(evil-window-new :wk "New window")
+      "w s" '(evil-window-split :wk "Horizontal split window")
+      "w v" '(evil-window-vsplit :wk "Vertical split window")
+      ;; Window motions
+      "w h" '(evil-window-left :wk "Window left")
+      "w j" '(evil-window-down :wk "Window down")
+      "w k" '(evil-window-up :wk "Window up")
+      "w l" '(evil-window-right :wk "Window right")
+      "w w" '(evil-window-next :wk "Goto next window")
+      ;; Move Windows
+      "w H" '(buf-move-left :wk "Buffer move left")
+      "w J" '(buf-move-down :wk "Buffer move down")
+      "w K" '(buf-move-up :wk "Buffer move up")
+      "w L" '(buf-move-right :wk "Buffer move right"))
 
 
 
   )
 #+end_src
 
+* ALL THE ICONS
+A collection of icons for commonly used programs, this is the most used Emacs icon collection.
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+  :ensure t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
+
+* BUFFER MOVE
+Creates functions to allow moving splits around easier
+#+begin_src emacs-lisp
+  (require 'windmove)
+
+;;;###autoload
+(defun buf-move-up ()
+  "Swap the current buffer and the buffer above the split.
+If there is no split, ie now window above the current one, an
+error is signaled."
+;;  "Switches between the current buffer, and the buffer above the
+;;  split, if possible."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'up))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No window above this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-down ()
+"Swap the current buffer and the buffer under the split.
+If there is no split, ie now window under the current one, an
+error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'down))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (or (null other-win) 
+            (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
+        (error "No window under this one")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-left ()
+"Swap the current buffer and the buffer on the left of the split.
+If there is no split, ie now window on the left of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'left))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No left split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+
+;;;###autoload
+(defun buf-move-right ()
+"Swap the current buffer and the buffer on the right of the split.
+If there is no split, ie now window on the right of the current
+one, an error is signaled."
+  (interactive)
+  (let* ((other-win (windmove-find-other-window 'right))
+	 (buf-this-buf (window-buffer (selected-window))))
+    (if (null other-win)
+        (error "No right split")
+      ;; swap top with this one
+      (set-window-buffer (selected-window) (window-buffer other-win))
+      ;; move this one to top
+      (set-window-buffer other-win buf-this-buf)
+      (select-window other-win))))
+#+end_src
+
+* BACKUP
+By default, emacs creates tons of backup files in the original directories, this leads to tons of clutter and annoyance, this tells Emacs to move all backup files to the trash directory which on most systems is ~/.local/share/Trash/files, if this directory does not exist (like on my NixOS systems btw) create it yourself.
+
+#+begin_src emacs-lisp
+  (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+#+end_src
+
+* COMPANY
+Company is an auto completion tool for Emacs that is an abbreivated form of "complete anything" and it is a universal completion service for Emacs, and is the most common completion engine.
+
+#+begin_src emacs-lisp
+  (use-package company
+  :defer 2
+  :diminish
+  :custom
+  (company-begin-commands '(self-insert-command))
+  (company-idle-delay .1)
+  (company-minimum-prefix-length 2)
+  (company-show-numbers t)
+  (company-tooltip-align-annotations 't)
+  (global-company-mode t))
+
+(use-package company-box
+  :after company
+  :diminish
+  :hook (company-mode . company-box-mode))
+
+
+#+end_src
+
+* DASHBOARD
+A simple, configurable onboard menu for Emacs, that can include titles, banners, bookmarks, projects, registers and way more...
+
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+
+    ;; Dashboard (the top configuration)
+    (setq dashboard-banner-logo-title "Welcome to Emacs, the best Operating System.")
+    (setq dashboard-startup-banner 'logo)
+
+    ;; Content Rules
+    (setq dashboard-center-content nil)   ;; Left aligned content (not centered)
+    (setq dashboard-vertically-center-content t)
+    (setq dashboard-show-shortcuts t)
+
+    ;; Customizes the amount of shown items
+    (setq dashboard-items '((recents   . 5)
+                            (bookmarks . 3)
+                            (projects  . 3)
+                            (agenda    . 5)
+                            (registers . 3)))
+
+    ;; Customizes the order in which things are laid out
+    (setq dashboard-startupify-list '(dashboard-insert-banner
+                                      dashboard-insert-newline
+                                      dashboard-insert-banner-title
+                                      dashboard-insert-newline
+                                      dashboard-insert-navigator
+                                      dashboard-insert-newline
+                                      dashboard-insert-items
+                                      dashboard-insert-newline
+                                      dashboard-insert-footer))
+
+    (setq dashboard-navigation-cycle t)
+    (setq dashboard-heading-shorcut-format " [%s]")
+
+    ;; These must match the items above exactly
+    (setq dashboard-item-shortcuts '((recents   . "r")
+                                     (bookmarks . "m")
+                                     (projects  . "p")
+                                     (agenda    . "a")
+                                     (registers . "e")))
+
+    (setq dashboard-icon-type 'all-the-icons)  ; use `all-the-icons` package
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+
+    (setq dashboard-icon-file-height 1.75)
+    (setq dashboard-icon-file-v-adjust -0.125)
+    (setq dashboard-heading-icon-height 1.75)
+    (setq dashboard-heading-icon-v-adjust -0.125)
+
+    (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
+
+    (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
+
+    (setq dashboard-footer-messages
+          '("Press SPC f c to edit the Emacs configuration"
+            "Press SPC . to open a file explorer"
+            "Press SPC W to find out keys to manage windows"
+            "Registers can be used to save locations of your cursor between multiple files"
+            "SPC h r r to reload the configuration on the fly"
+            "Press TAB TAB to quickly comment lines"
+            "Press SPC f r to quickly find recent files"
+            "vim mode is needed everywhere, including your browser"))
+
+    ;; Customize heading icons for recents and bookmarks only
+    (dashboard-modify-heading-icons '((recents . "file-text")
+                                      (bookmarks . "book")
+  				    (projects . "briefcase")
+  				    (agenda . "calendar")
+  				    (registers . "database")))
+
+    (setq initial-buffer-choice 'dashboard-open)
+
+    (dashboard-setup-startup-hook))
+#+end_src
+
+* DIMINISH
+This packages allows for the hiding or abbreviation of the mode line displays of minor-modes, you can add ':diminish' to any use-package block to hide the said mode within the mode line.
+
+#+begin_src emacs-lisp
+  (use-package diminish)
+#+end_src
+
+* DIRED
+Additional configurations to DIRED (the built in file manager of Emacs) this gives configurations to allow more extensions to appear, and also allow using vim keybindings to nativgate it.
+
+Dired Open allows you to open files in external apps while still using emacs, and peep-dired allows viewing files in an inline view, this makes dired an extremely powerful file-manager especially for coding / text editing where multiple files are required.
+
+eog is Eye of Gnome, and is the default gnome image viewer, if you are not using gnome please change this to your installed image viewer.
+
+totem is the executable command for GNOME Videos, if you are not using the default gnome video player, please change this to your installed video player.
+
+#+begin_src emacs-lisp
+  (use-package dired-open
+    :config
+    (setq dired-open-extensions '(("gif" . "eog")
+                                  ("jpg" . "eog")
+                                  ("png" . "eog")
+                                  ("mkv" . "totem")
+                                  ("mp4" . "totem"))))
+
+  (use-package peep-dired
+    :after dired
+    :hook (evil-normalize-keymaps . peep-dired-hook) ;; loads evil mode in dired
+    :config
+    (require 'dired-aux)  
+    (evil-define-key 'normal dired-mode-map (kbd "h") 'dired-up-directory)
+    (evil-define-key 'normal dired-mode-map (kbd "l") 'dired-open-file)
+    (evil-define-key 'normal peep-dired-mode-map (kbd "j") 'peep-dired-next-file)
+    (evil-define-key 'normal peep-dired-mode-map (kbd "k") 'peep-dired-prev-file)) 
+#+end_src
+
+* FLYCHECK
+Fly Check is a program that checks emacs code for errors, for example spelling errors, missing a semi colin or not closing a function properly, for more information on language support for flycheck, [[https://www.flycheck.org/en/latest/languages.html][read this]]
+
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :defer t
+    :diminish
+    :init (global-flycheck-mode))
+#+end_src
 
 * GRAPHICAL USER INTERFACE TWEAKS
 
 ** Fonts
-Defining the various fonts that Emacs will use.
+Defining the various fonts that Emacs will use, and the configurations of said fonts, alongside definitions for sizes of headers in ORG documents.
 
-** Setting the Font Face
+Ensure you have this fonts installed, otherwise emacs won't look right, feel free to edit the fonts, and remove the Nerd Font aspect aswell if you wish, since Nerd Fonts are reasonably bloated especially if you have multiple installed like I do.
+
+*** Setting the Font Face
+
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil
-  		    :font "JetBrains Mono Nerd Font"
-  		    :height 110
-  		    :weight 'medium)
-  (set-face-attribute 'variable-pitch nil
-  		    :font "Ubuntu Nerd Font"
-  		    :height 120
-  		    :weight 'medium)
+      (set-face-attribute 'default nil
+      :font "JetBrains Mono Nerd Font"
+      :height 110
+      :weight 'medium)
+    (set-face-attribute 'variable-pitch nil
+      :font "Ubuntu Nerd Font"
+      :height 120
+      :weight 'medium)
+    (set-face-attribute 'fixed-pitch nil
+      :font "JetBrains Mono Nerd Font"
+      :height 110
+      :weight 'medium)
+    ;; Makes commented text and keywords italics.
+    ;; This is working in emacsclient but not emacs.
+    ;; Your font must have an italic face available.
+    (set-face-attribute 'font-lock-comment-face nil
+      :slant 'italic)
+    (set-face-attribute 'font-lock-keyword-face nil
+      :slant 'italic)
 
-  ;; Make commented text and keywords italic
-  ;; Font must have an italic face avaliable
-  (set-face-attribute 'font-lock-comment-face nil
-  		    :slant 'italic)
-  (set-face-attribute 'font-lock-keyword-face nil
-  		    :slant 'italic)
+    ;; This sets the default font on all graphical frames created after restarting Emacs.
+    ;; Does the same thing as 'set-face-attribute default' above, but emacsclient fonts
+    ;; are not right unless I also add this method of setting the default font.
+    (add-to-list 'default-frame-alist '(font . "JetBrains Mono Nerd Font-11"))
 
-  ;; Make this font the default to all new frames (specifically needed for the emacsserver)
-  (add-to-list 'default-frame-alist '(font . "JetBrains Mono Nerd Font-11"))
-  (setq-default line-spacing 0.12)
-  
+    ;; Uncomment the following line if line spacing needs adjusting.
+    (setq-default line-spacing 0.12)
+
+   ;; Changes the font size of the ORG mode titles
+  (custom-set-faces
+   '(org-level-1 ((t (:inherit default :weight bold :height 1.5))))
+   '(org-level-2 ((t (:inherit default :weight bold :height 1.4))))
+   '(org-level-3 ((t (:inherit default :weight bold :height 1.3))))
+   '(org-level-4 ((t (:inherit default :weight bold :height 1.2))))
+   '(org-level-5 ((t (:inherit default :weight bold :height 1.1))))
+   '(org-level-6 ((t (:inherit default :weight bold :height 1.05))))
+   '(org-level-7 ((t (:inherit default :weight bold :height 1.0))))
+   '(org-level-8 ((t (:inherit default :weight bold :height 1.0)))))
+
+#+end_src
+
+*** Zooming In/Out
+Enables using the bindings C-= and C-- to zoom in and out
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-=") 'text-scale-increase)
+  (global-set-key (kbd "C--") 'text-scale-decrease)
+  (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+  (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
 #+end_src
 
 ** Disable Menubar, Toolbars, and Scrollbars
+
 #+begin_src emacs-lisp
   (menu-bar-mode -1)
   (tool-bar-mode -1)
@@ -162,13 +553,138 @@ Defining the various fonts that Emacs will use.
 #+end_src
 
 ** Display Line Numbers and Truncated Lines
+
 #+begin_src emacs-lisp
   (global-display-line-numbers-mode 1)
   (global-visual-line-mode t)
 #+end_src
 
+* GIT PROGRAMS
+Git is a distributed control system that is used to track changes in file and coordinate work between multiple people, It is most commonly used for source code management in software development/coding. Underneath this we add programs that enhance compatibility with git version control in order to utilise it properly and efficiently within Emacs.
+
+** Git Time Machine
+git-timemachine is a program that allows you to move backwards and forwards in time through a files commits 'SPC g t' will open the time machine on a file if it is in a git repository. Then while in normal mode you can you 'CTRL-j' and 'CTRL-k' to move backwards and forewards through the commit history of the file.
+
+#+begin_src emacs-lisp
+  (use-package git-timemachine
+  :after git-timemachine
+  :hook (evil-normalize-keymaps . git-timemachine-hook)
+  :config
+    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-j") 'git-timemachine-show-previous-revision)
+    (evil-define-key 'normal git-timemachine-mode-map (kbd "C-k") 'git-timemachine-show-next-revision)
+)
+#+end_src
+
+** Magit
+Magit is a full featured keyboard driven git interface for Emacs, it is widely considered one of the most powerful git UIs and is one of the most attractive features to Emacs over other text editors such as vim and vscode.
+
+#+begin_src emacs-lisp
+  (use-package magit)
+#+end_src
+
+* HIGHLIGHT TODO
+Adds highlightings to TODO and related words.
+
+#+begin_src emacs-lisp
+  (use-package hl-todo
+  :hook ((org-mode . hl-todo-mode)
+         (prog-mode . hl-todo-mode))
+  :config
+  (setq hl-todo-highlight-punctuation ":"
+        hl-todo-keyword-faces
+        `(("TODO"       warning bold)
+          ("FIXME"      error bold)
+          ("HACK"       font-lock-constant-face bold)
+          ("REVIEW"     font-lock-keyword-face bold)
+          ("NOTE"       success bold)
+          ("DEPRECATED" font-lock-doc-face bold))))
+
+#+end_src
+
+* IVY (COUNSEL)
+Ivy is a generic completion mechanism for Emacs.
+Counsel is a colletion of Ivy-enhanced versions of common Emacs commands.
+Ivy-rich allows adding descriptions alongside the commands in M-x.
+
+#+begin_src emacs-lisp
+    (use-package counsel
+    :diminish
+    :after ivy
+    :config (counsel-mode))
+
+  (use-package ivy
+    :diminish
+    :custom
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-count-format "(%d/%d) ")
+    (setq enable-recursive-minibuffers t)
+    :config
+    (ivy-mode))
+
+  (use-package all-the-icons-ivy-rich
+    :ensure t
+    :init (all-the-icons-ivy-rich-mode 1))
+
+  (use-package ivy-rich
+    :after ivy
+    :ensure t
+    :init (ivy-rich-mode 1) 
+    :custom
+    (ivy-virtual-abbreviate 'full
+     ivy-rich-switch-buffer-align-virtual-buffer t
+     ivy-rich-path-style 'abbrev)
+    :config
+    (ivy-set-display-transformer 'ivy-switch-buffer
+                                 'ivy-rich-switch-buffer-transformer))
+#+end_src
+
+** Counsel Project Tile
+Ivy enchanced interface for Projecttile projects
+
+#+begin_src emacs-lisp
+  (use-package counsel-projectile
+  :diminish
+  :after (counsel projectile)
+  :config
+  (counsel-projectile-mode 1))
+#+end_src
+
+* LANGUAGE SUPPORT
+Emacs has built-in programming language modes for Lisp, Scheme, DSSSL, Ada, ASM, AWK, C, C++, Fortran, Icon, IDL (CORBA), IDLWAVE, Java, Javascript, M4, Makefiles, Metafont, Modula2, Object Pascal, Objective-C, Octave, Pascal, Perl, Pike, PostScript, Prolog, Python, Ruby, Simula, SQL, Tcl, Verilog, and VHDL.  Other languages will require you to install additional modes.
+
+More will be coming soon, as the configuration evolves overtime, to become more like an IDE.
+
+#+begin_src emacs-lisp
+  (use-package rust-mode)
+  (use-package nix-mode)
+#+end_src
+
+
+* MINIBUFFER ESCAPE
+By default, emacs needs you to press ESC three times to escape mini buffer, this changes it to only requiring ESC to be pressed once to quit the minibuffer.
+
+#+begin_src emacs-lisp
+  (global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+
+* MODELINE
+The Modeline is the bottom bar that appears at the bottom of Emacs, while you can create your own I'm choosing to use the doom emacs prebuilt one as it's pretty much perfect, and I'd rather not go through the hassle of making my own.
+
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :config
+  (setq doom-modeline-height 35      ;; sets modeline height
+        doom-modeline-bar-width 5    ;; sets right bar width
+        doom-modeline-persp-name t   ;; adds perspective name to modeline
+        doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
+#+end_src
+
 * ORG MODE
 ** Enabling Table of Contents
+Enables table of contents for ORG mode.
+
 #+begin_src emacs-lisp
   (use-package toc-org
     :commands toc-org-enable
@@ -184,6 +700,82 @@ Org-bullets gives the ability to use bullet points rather than asterisks (looks 
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 #+end_src
 
+** Source Code Block Tag Expansion
+Allows for < tag expressions to easily input common Org Mode expressions
+
+| Shortcut | Expands to                       |
+|----------+----------------------------------|
+| <a       | #+BEGIN_EXPORT ascii … #+END_EXPORT |
+| <c       | #+BEGIN_CENTER … #+END_CENTER     |
+| <C       | #+BEGIN_COMMENT … #+END_COMMENT   |
+| <e       | #+BEGIN_EXAMPLE … #+END_EXAMPLE   |
+| <E       | #+BEGIN_EXPORT … #+END_EXPORT     |
+| <h       | #+BEGIN_EXPORT html … #+END_EXPORT |
+| <l       | #+BEGIN_EXPORT latex … #+END_EXPORT|
+| <q       | #+BEGIN_QUOTE … #+END_QUOTE       |
+| <s       | #+BEGIN_SRC … #+END_SRC           |
+| <v       | #+BEGIN_VERSE … #+END_VERSE       |
+
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+** Inline Images
+#+begin_src emacs-lisp
+  (setq org-startup-with-inline-images t) ;; Show images on file open
+
+(add-hook 'org-babel-after-execute-hook #'org-display-inline-images)
+
+#+end_src
+
+* PERSPECTIVE
+Perspective is a package that provides multiple workspaces in Emacs, similar to multiple desktops in window managers. Each perspective has its own buffer list, window layout and isolation. To manage perspective use 'SPC =' to find the keybindings for perspectives.
+
+#+begin_src emacs-lisp
+  (use-package perspective
+    :custom
+    (persp-mode-prefix-key (kbd "C-c M-p"))
+    (persp-state-default-file (expand-file-name "persp-state.el" user-emacs-directory))
+    :hook
+    ((ibuffer . persp-ibuffer-set-filter-groups)
+     (ibuffer . (lambda ()
+  		(unless (eq ibuffer-sorting-mode 'alphabetic)
+                    (ibuffer-do-sort-by-alphabetic))))
+     (kill-emacs . persp-state-save))
+    :init
+    (persp-mode))
+#+end_src
+
+* PROJECT-TILE
+Project Interaction Library (used with Consel Project Tile)
+
+#+begin_src emacs-lisp
+  (use-package projectile
+  :diminish 
+  :demand t
+  :config
+  (projectile-mode +1)
+  (setq projectile-completion-system 'ivy))
+#+end_src
+
+* RAINBOW DELIMITERS
+Adds rainbow colouring to parentheses.
+
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+  :hook ((emacs-lisp-mode . rainbow-delimiters-mode)
+         (clojure-mode . rainbow-delimiters-mode)))
+#+end_src
+
+* RAINBOW MODE
+Displays the actual colour as a background for any hex color value (eg. #ffffff). The code below enabled rainbow-mode in all programming modes, alongside org mode.
+
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+  :diminish 
+  :hook 
+  ((org-mode prog-mode) . rainbow-mode))
+#+end_src
 
 * RELOAD EMACS
 A simple function to automate the reloading of emacs
@@ -195,10 +787,67 @@ A simple function to automate the reloading of emacs
     (load-file user-init-file))
 #+end_src
 
+* SHELLS AND TERMINALS
+**  Vterm
+Fast terminal emulator for Emacs
+
+#+begin_src emacs-lisp
+  (use-package vterm)
+#+end_src
+
+** Vterm-Toggle
+Automagic toggle for vterm, allows to toggle it on and off on a specific split.
+
+#+begin_src emacs-lisp
+  (use-package vterm-toggle
+  :after vterm
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (setq vterm-toggle-scope 'project)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                     (let ((buffer (get-buffer buffer-or-name)))
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                  (display-buffer-reuse-window display-buffer-at-bottom)
+                  ;;(display-buffer-reuse-window display-buffer-in-direction)
+                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+                  ;;(direction . bottom)
+                  ;;(dedicated . t) ;dedicated is supported in emacs27
+                  (reusable-frames . visible)
+                  (window-height . 0.3))))
+#+end_src
+
+* SUDO EDIT
+Sudo edit gives the ability to open files with sudo permissions without needing to switch over to editing with sudo permissions.
+
+#+begin_src emacs-lisp
+  (use-package sudo-edit
+    :config
+      (connor/leader-keys
+        "fu" '(sudo-edit-find-file :wk "Sudo find file")
+        "fU" '(sudo-edit :wk "Sudo edit file")))
+ #+end_src
+ 
+* DOOM EMACS Theme Engine
+Doom Emacs has a really good collection of themes, this was one of the drawbacks for me of writing my own configuration, however you can import the Doom Emacs themes freely to any emacs configuration, I have added this to the configuration so you can easily choose any theme you want.
+
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :config
+    (setq doom-themes-enable-bold t
+          doom-themes-italic t))
+  (load-theme 'doom-nord t)
+#+end_src
+
+
 * WHICH-KEY
 Which-Key is a program that displays avaliable keybindings in a popup as you type.
+
 #+begin_src emacs-lisp
   (use-package which-key
+  :diminish
   :init
   (which-key-mode 1)
   :config
